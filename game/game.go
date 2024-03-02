@@ -1,4 +1,4 @@
-package main
+package game
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ import (
 
 var winMap map[string]string
 
-func main() {
+func Start() {
 	log.Println("Welcome to the game")
 	fmt.Println("Press s to start or q to quit")
 
@@ -35,9 +35,9 @@ func executeGame() {
 		if selection == "quit" {
 			quit = true
 		} else {
-			computerSelection := computerTurn()
+			computerSelection := computerTurn(generateRawComputerChoice)
 			result := evaluateGame(selection, computerSelection)
-			printResult(result)
+			fmt.Println(evaluateResult(result))
 		}
 
 	}
@@ -63,13 +63,10 @@ func playerTurn() string {
 	return selection
 }
 
-func computerTurn() string {
-	// computer picks
-	// do random, convert to choice
+func computerTurn(genFn generateChoice) string {
 	var selection string
-	generator := rand.New(rand.NewSource(time.Now().UnixNano()))
 
-	rawRand := generator.Intn(3)
+	rawRand := genFn()
 	if rawRand == 0 {
 		selection = "rock"
 	} else if rawRand == 1 {
@@ -79,6 +76,12 @@ func computerTurn() string {
 	}
 
 	return selection
+}
+
+func generateRawComputerChoice() int {
+	generator := rand.New(rand.NewSource(time.Now().UnixNano()))
+
+	return generator.Intn(3)
 }
 
 func evaluateGame(player, computer string) int {
@@ -96,14 +99,15 @@ func evaluateGame(player, computer string) int {
 	return result
 }
 
-func printResult(result int) {
+func evaluateResult(result int) string {
+	str := "Tie!"
 	if result == 1 {
-		fmt.Println("Player Won!")
+		str = "Player Won!"
 	} else if result == -1 {
-		fmt.Println("Player Lost!")
-	} else {
-		fmt.Println("Tie!")
+		str = "Player Lost!"
 	}
+
+	return str
 }
 
 func setWinMap() {
@@ -113,3 +117,5 @@ func setWinMap() {
 		"scissors": "paper",
 	}
 }
+
+type generateChoice func() int
