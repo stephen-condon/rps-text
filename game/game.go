@@ -5,6 +5,7 @@ import (
 	"log"
 	"math/rand"
 	"os"
+	"rockpaperscissors/statistics"
 	"time"
 )
 
@@ -27,6 +28,7 @@ func Start() {
 func executeGame() {
 	quit := false
 	setWinMap()
+	statistics.New()
 
 	// main game loop
 	for !quit {
@@ -34,6 +36,8 @@ func executeGame() {
 
 		if selection == "quit" {
 			quit = true
+		} else if selection == "stats" {
+			statistics.PrintStatistics()
 		} else {
 			computerSelection := computerTurn(generateRawComputerChoice)
 			result := evaluateGame(selection, computerSelection)
@@ -46,12 +50,14 @@ func executeGame() {
 func playerTurn() string {
 	selection := ""
 	fmt.Println("Make your selection")
-	fmt.Println("r: Rock | s: Scissors | p: Paper | q: Quit the Game")
+	fmt.Println("r: Rock | s: Scissors | p: Paper | q: Quit the Game | z: Statistics")
 	var input string
 
 	fmt.Scanln(&input)
 	if input == "q" {
 		selection = "quit"
+	} else if input == "z" {
+		selection = "stats"
 	} else if input == "r" {
 		selection = "rock"
 	} else if input == "p" {
@@ -91,9 +97,13 @@ func evaluateGame(player, computer string) int {
 		playerWinValue := winMap[player]
 		if computer == playerWinValue {
 			result = 1
+			incrementStatistics("win")
 		} else {
 			result = -1
+			incrementStatistics("loss")
 		}
+	} else {
+		incrementStatistics("tie")
 	}
 
 	return result
@@ -116,6 +126,11 @@ func setWinMap() {
 		"paper":    "rock",
 		"scissors": "paper",
 	}
+}
+
+func incrementStatistics(result string) {
+	currentStats := statistics.Get()
+	currentStats.Increment(result)
 }
 
 type generateChoice func() int
